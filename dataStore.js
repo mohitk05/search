@@ -5,10 +5,12 @@ class Data {
     constructor() {
         this.data = []
         this.set = {}
+        this.setExists = false
         this.minLength = 3
         this.generate()
     }
 
+    //function to pull data from the csv file
     async populate() {
         return new Promise((resolve, reject) => {
             fs.readFile('./data.csv', (err, data) => {
@@ -22,6 +24,7 @@ class Data {
         })
     }
 
+    //function to generate the hash set by iterating over every name
     async generate() {
         return new Promise((resolve, reject) => {
             this.populate().then(() => {
@@ -31,10 +34,13 @@ class Data {
                         this.addToSet(i, d, j)
                     }
                 }
+                this.setExists = true
+                resolve()
             })
         })
     }
 
+    //function to add values with scores to the set
     addToSet(id, string, l) {
         string = string.replace(/\$/g, '').toLowerCase()
         for(let i = 0; i < string.length - l + 1; i++) {
@@ -47,10 +53,10 @@ class Data {
         }
     }
 
+    //search function to be used by the API
     async search(query) {
-        if(!this.data) await this.generate()
+        if(!this.setExists) await this.generate()
         query = query.replace(/[^A-za-z]+/g, '').replace(/\^+/g, '').toLowerCase()
-        const max = query.length < 10 ? query.length : 10
         let results = {}
         let nearest = this.set[query]
         nearest && nearest.forEach(n => {
@@ -60,17 +66,6 @@ class Data {
                 results[n[0]] = [n[1]]
             }
         })
-        // for(let i = 0; i < max - this.minLength + 1; i++){
-        //     console.log(query.slice(i, i + this.minLength))
-        //     let nearest = this.set[query.slice(i, i + this.minLength)]
-        //     nearest && nearest.forEach(n => {
-        //         if(results[n[0]]){
-        //             results[n[0]].push(n[1])
-        //         } else {
-        //             results[n[0]] = [n[1]]
-        //         }
-        //     })
-        // }
         
         let data = Object.entries(results).map(n => {
             return {
