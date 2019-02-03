@@ -2,6 +2,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const app = express()
+const http = require('http').createServer(app);
 const DS = require('./dataStore')
 let data_store = DS()
 const search = require('./search')
@@ -22,4 +23,4 @@ app.use((err, req, res, next) => {
     res.send({ error: err })
 })
 
-module.exports = app
+module.exports = http
